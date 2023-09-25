@@ -1,9 +1,12 @@
 package org.java.ticketone;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ProgrammaEventi {
     
@@ -53,11 +56,50 @@ public class ProgrammaEventi {
 
         
         for (Evento evento : this.eventi) {
-            sb.append("- ").append(evento.getData()).append(" - ").append(evento.getTitolo()).append("\n");
+            sb.append(evento.toString()).append("\n");
         }
 
         return sb.toString();
     }
+    
+    public BigDecimal mediaPrezzoConcerto() {
+        List<Evento> concerti = eventi.stream()
+                .filter(evento -> evento instanceof Concerto)
+                .collect(Collectors.toList());
+
+        return concerti.stream()
+                .map(evento -> ((Concerto) evento).getPrezzo())
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .divide(BigDecimal.valueOf(concerti.size()), 2, RoundingMode.HALF_UP);
+    }
+
+
+    public BigDecimal mediaPrezzoSpettacolo() {
+        List<Evento> spettacoli = eventi.stream()
+                .filter(evento -> evento instanceof Spettacolo)
+                .collect(Collectors.toList());
+
+        return spettacoli.stream()
+                .map(evento -> ((Spettacolo) evento).getPrezzo())
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .divide(BigDecimal.valueOf(spettacoli.size()), 2, RoundingMode.HALF_UP);
+    }
+
+
+    public BigDecimal mediaPrezzoEvento() {
+        return eventi.stream()
+                .filter(evento -> evento instanceof Concerto || evento instanceof Spettacolo)
+                .map(evento -> {
+                    if (evento instanceof Concerto) {
+                        return ((Concerto) evento).getPrezzo();
+                    } else {
+                        return ((Spettacolo) evento).getPrezzo();
+                    }
+                })
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .divide(BigDecimal.valueOf(eventi.size()), 2, RoundingMode.HALF_UP);
+    }
+
 
 
 }
